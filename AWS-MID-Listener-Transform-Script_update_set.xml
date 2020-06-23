@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><unload unload_date="2020-06-23 18:00:35">
+<sys_remote_update_set action="INSERT_OR_UPDATE">
+<application display_value="Global">global</application>
+<application_name>Global</application_name>
+<application_scope>global</application_scope>
+<application_version/>
+<collisions/>
+<commit_date/>
+<deleted/>
+<description/>
+<inserted/>
+<name>AWS MID Listener Transform Script</name>
+<origin_sys_id/>
+<parent display_value=""/>
+<release_date/>
+<remote_base_update_set display_value=""/>
+<remote_parent_id/>
+<remote_sys_id>f86c974adb6d1050c233152b1396197a</remote_sys_id>
+<state>loaded</state>
+<summary/>
+<sys_class_name>sys_remote_update_set</sys_class_name>
+<sys_created_by>nick.ryan</sys_created_by>
+<sys_created_on>2020-06-23 18:00:34</sys_created_on>
+<sys_id>61cd5bcadb6d1050c233152b13961972</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_updated_by>nick.ryan</sys_updated_by>
+<sys_updated_on>2020-06-23 18:00:34</sys_updated_on>
+<update_set display_value=""/>
+<update_source display_value=""/>
+<updated/>
+</sys_remote_update_set>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>em_connector_push_db682765dbd9d490c233152b13961935</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="em_connector_push"&gt;&lt;em_connector_push action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;description&gt;Transform script to handle incoming events from AWS&lt;/description&gt;&lt;header_name&gt;Transform&lt;/header_name&gt;&lt;header_value&gt;TransformEvents_AWSCloudWatch&lt;/header_value&gt;&lt;mid_server_script_include display_value="TransformEvents_AWSCloudWatch"&gt;12346e25dbd1d490c233152b13961926&lt;/mid_server_script_include&gt;&lt;name&gt;AWS Events Transform Script MID&lt;/name&gt;&lt;order&gt;100&lt;/order&gt;&lt;script&gt;&lt;![CDATA[(function process(/*RESTAPIRequest*/ request, body) {
+	
+	
+	var messageType = new AWSSNSMessage().subscibeAndGetType(request, body);
+	gs.debug('inside em aws processor, body: ' + body + ', headers: ' + JSON.stringify(request.headers) + ", messageType: " + messageType);	
+	try
+	{
+		
+	if (messageType == "Notification") {
+		var jsonObject = JSON.parse(body);
+		var message = jsonObject["Message"];
+		if (message) {
+			var mo = JSON.parse(message);
+			var trigger = mo["Trigger"];
+			if (!trigger)
+				return {"AWS EM" : "This is not an Alarm"};
+			
+			var dimensions = trigger["Dimensions"];					
+			var gr = new GlideRecord('em_event');
+			gr.source = "AWS CloudWatch";
+			
+			// Set severity to warning when there is an alarm info otherwise
+			if ("ALARM" == mo["NewStateValue"])
+				gr.severity = "4";	
+			else 
+				gr.severity = "5";
+
+			// Do the binding using rules, don't set the ci_type here
+			// Then we want to have all the name/value pairs inside the additional_data
+			for (var i  = 0; i &lt; dimensions.length; i++)
+			  if (dimensions[i]["name"] &amp;&amp; dimensions[i]["value"]) {
+					mo[dimensions[i]["name"]] = dimensions[i]["value"];
+				    gr.resource = dimensions[i]["value"];
+			  }
+			
+			gr.description = mo["NewStateReason"];
+			gr.type = trigger["MetricName"];
+			gr.metric_name = trigger["MetricName"];
+			var timeStamp = jsonObject["Timestamp"];
+      if (timeStamp) {
+           mo["original_Timestamp"] = timeStamp;
+           timeStamp = timeStamp.replace("Z", "+0000");
+		   timeStamp = timeStamp.replace("T", " ");
+           gr.time_of_event = new GlideDateTime(timeStamp);
+      }
+			gr.additional_info = JSON.stringify(mo);
+			gr.event_class = jsonObject["TopicArn"];
+			gr.insert();
+		}
+	} 
+	else{
+		gs.debug('messageType is not Notification, it is:  '+messageType );
+	}
+	}
+	catch(er){
+		gs.error(er);
+		status=500;
+		return er;
+	}
+	return "success";
+})(request, body);]]&gt;&lt;/script&gt;&lt;source&gt;aws&lt;/source&gt;&lt;sys_class_name&gt;em_connector_push&lt;/sys_class_name&gt;&lt;sys_created_by&gt;nick.ryan&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2020-06-09 19:14:28&lt;/sys_created_on&gt;&lt;sys_id&gt;db682765dbd9d490c233152b13961935&lt;/sys_id&gt;&lt;sys_mod_count&gt;2&lt;/sys_mod_count&gt;&lt;sys_name&gt;AWS Events Transform Script MID&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;em_connector_push_db682765dbd9d490c233152b13961935&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;nick.ryan&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2020-06-23 17:12:25&lt;/sys_updated_on&gt;&lt;type&gt;2&lt;/type&gt;&lt;/em_connector_push&gt;&lt;/record_update&gt;</payload>
+<payload_hash>-1145503997</payload_hash>
+<remote_update_set display_value="AWS MID Listener Transform Script">61cd5bcadb6d1050c233152b13961972</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nick.ryan</sys_created_by>
+<sys_created_on>2020-06-23 18:00:34</sys_created_on>
+<sys_id>69cd5bcadb6d1050c233152b13961972</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>172e252040b0000001</sys_recorded_at>
+<sys_updated_by>nick.ryan</sys_updated_by>
+<sys_updated_on>2020-06-23 18:00:34</sys_updated_on>
+<table/>
+<target_name>AWS Events Transform Script MID</target_name>
+<type>Listener Transform Scripts</type>
+<update_domain>global</update_domain>
+<update_guid>359c1b4a246d1050f0500d3f5897da73</update_guid>
+<update_guid_history>359c1b4a246d1050f0500d3f5897da73:-1145503997,48c25746972d105068944079ae4a9cc8:-1145503997,e68f27e1131dd490ad9710d5203aac13:-528768048,d3682f654ed9d490330e905f6ced883c:-1145503997</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>ecc_agent_script_include_12346e25dbd1d490c233152b13961926</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update sys_domain="global" table="ecc_agent_script_include"&gt;&lt;ecc_agent_script_include action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;description&gt;Script to parse JSON formatted event messages that are collected from AWS CloudWatch&lt;/description&gt;&lt;name&gt;TransformEvents_AWSCloudWatch&lt;/name&gt;&lt;script&gt;&lt;![CDATA[var Event = Packages.com.snc.commons.eventmgmt.Event;
+var StringUtil = Packages.com.glide.util.StringUtil;
+var JSONObject = Packages.org.json.JSONObject;
+var SimpleDateFormat = Packages.java.text.SimpleDateFormat;
+
+var TransformEvents_AWSCloudWatch = Class.create();
+TransformEvents_AWSCloudWatch.prototype = {
+    initialize: function() {},
+
+    //This function is mandatory for MID Transform Script
+    transform: function() {
+
+        ms.log("TransformEvents_AWSCloudWatch received body:" + messageBody);
+
+        try {
+
+            var events = [];
+            var additionalInfo = {};
+            var event = new Event();
+
+            var jsonObjectParse = new JSONObject(messageBody);
+            var jsonObject = JSON.parse(jsonObjectParse);
+            var str = JSON.stringify(jsonObject);
+            var parser = new JSONParser();
+            var result = parser.parse(str);
+
+            if (!result.Trigger)
+                return "AWS EM: This is not an Alarm";
+
+            event.setField("source", "AWS CloudWatch");
+
+            var dimensions = result.Trigger.Dimensions;
+
+            if ("ALARM" == result["NewStateValue"])
+                event.setField("severity", "4");
+            else
+                event.setField("severity", "5");
+
+            // Do the binding using rules, don't set the ci_type here
+            // Then we want to have all the name/value pairs inside the additional_data
+            for (var i = 0; i &lt; dimensions.length; i++)
+                if (dimensions[i]["name"] &amp;&amp; dimensions[i]["value"]) {
+                    result[dimensions[i]["name"]] = dimensions[i]["value"];
+                    event.setField("resource", dimensions[i]["value"]);
+                }
+            event.setField("description", result["NewStateReason"]);
+			event.setField("type", result.Trigger.MetricName);
+            event.setField("metric_name", result.Trigger.MetricName);
+            event.setField("event_class", result["AlarmArn"]);
+
+            var timeStamp = result["StateChangeTime"];
+            /*  This date manipulation doesn't seem to be working ont he MID
+			if (timeStamp) {
+                timeStamp = timeStamp.replace("Z", "+0000");
+                timeStamp = timeStamp.replace("T", " ");
+                
+				//Mid implementation
+				var glidePattern = "yyyy-MM-dd HH:mm:ss";
+
+				var glideFormat = new SimpleDateFormat(glidePattern);
+				var time_of_event = glideFormat.format(timeStamp);
+				event.setField("time_of_event", '' + time_of_event);
+			}
+            */
+			
+			// Create additional_info field
+			this.updateAdditionalInfo(event, "", jsonObject, additionalInfo);
+            // Iterates over Additional information JSON object and adds all nested objects' fields as fields of the Additional information object
+            var notDone = true;
+            while (notDone) {
+                notDone = false;
+                for (var key in additionalInfo) {
+                    if (Object.prototype.toString.call(additionalInfo[key]) == '[object Object]') {
+                        notDone = true;
+                        this.updateAdditionalInfo(event, key, additionalInfo[key], additionalInfo);
+                        additionalInfo[key] = "";
+                    }
+                }
+            }
+            ms.log("TransformEvents_AWSCloudWatch generated additional information:" + JSON.stringify(additionalInfo));
+			// Add all Additional information fields to the event
+			for (var key1 in additionalInfo) { 
+				event.setField(key1, additionalInfo[key1]);
+			}
+
+			events[0] = event;
+            return events;
+        } catch (e) {
+            ms.log("TransformEvents_AWSCloudWatch error:" + e);
+        }
+
+    },
+
+    updateAdditionalInfo: function(event, field, jsonObject, additionalInfo) {
+        for (var key in jsonObject) {
+            var newKey = key;
+            if (field != "") {
+                newKey = field + '_' + key;
+            }
+
+            // You can do some transformation here and set fields on the event
+            // if(key == "MySource")
+            //            event.setField("source", jsonObject[key]);
+
+            additionalInfo[newKey] = jsonObject[key];
+        }
+    },
+
+    type: 'TransformEvents_AWSCloudWatch'
+};]]&gt;&lt;/script&gt;&lt;sys_class_name&gt;ecc_agent_script_include&lt;/sys_class_name&gt;&lt;sys_created_by&gt;nick.ryan&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2020-06-09 14:16:29&lt;/sys_created_on&gt;&lt;sys_domain&gt;global&lt;/sys_domain&gt;&lt;sys_domain_path&gt;/&lt;/sys_domain_path&gt;&lt;sys_id&gt;12346e25dbd1d490c233152b13961926&lt;/sys_id&gt;&lt;sys_mod_count&gt;8&lt;/sys_mod_count&gt;&lt;sys_name&gt;TransformEvents_AWSCloudWatch&lt;/sys_name&gt;&lt;sys_overrides/&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;ecc_agent_script_include_12346e25dbd1d490c233152b13961926&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;nick.ryan&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2020-06-23 17:19:02&lt;/sys_updated_on&gt;&lt;/ecc_agent_script_include&gt;&lt;/record_update&gt;</payload>
+<payload_hash>-1520878701</payload_hash>
+<remote_update_set display_value="AWS MID Listener Transform Script">61cd5bcadb6d1050c233152b13961972</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nick.ryan</sys_created_by>
+<sys_created_on>2020-06-23 18:00:34</sys_created_on>
+<sys_id>a5cd5bcadb6d1050c233152b13961972</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>172e25630800000001</sys_recorded_at>
+<sys_updated_by>nick.ryan</sys_updated_by>
+<sys_updated_on>2020-06-23 18:00:34</sys_updated_on>
+<table/>
+<target_name>TransformEvents_AWSCloudWatch</target_name>
+<type>MID Server Script Include</type>
+<update_domain>global</update_domain>
+<update_guid>74add7ca166d105095f91c9b57c02235</update_guid>
+<update_guid_history>74add7ca166d105095f91c9b57c02235:-1520878701,4d44dfc6c02d10503f600db8785241f0:-1520878701,b1921346d02d1050c71f0a37ff48e7ed:-1066066405,eae713654159d49053a7ab7b820fe94d:2080169917,f37793a1d959d490e3a9bc4c0dee4924:1885700422,3a3203e95a95d4906a1604de2a1a3f6a:-2145367578,1dd08b295795d4904593c66e9b5a72f9:398308178,7a12ba6d0115d49090b835c5b7317fe5:1401449750,58746e2583d1d490f5c57bf23908d01a:1858566810,52346e2591d1d490113418daf1280b29:1260599748</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+</unload>
